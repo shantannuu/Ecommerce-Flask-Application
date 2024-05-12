@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Button, TextField, Typography, Container, makeStyles } from '@material-ui/core';
+import { login } from '../AxioApi/UserApi';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -24,6 +26,8 @@ const useStyles = makeStyles((theme) => ({
 
 const Login = () => {
     const classes = useStyles();
+    const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState('');
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -33,10 +37,27 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         // Add code to handle form submission (e.g., send data to backend)
-        console.log(formData);
+
+        try {
+
+            const response = await login(formData); // Call the register API function
+            console.log(response.user_id); // Handle success response
+            
+            setFormData({
+                email: '',
+                password: '',
+            });
+            
+            localStorage.setItem("token", response.token);
+            navigate('/');
+        } catch (error) {
+            console.error(error.message); // Handle error response
+            setErrorMessage(error.message);
+        }
+        // console.log(formData);
     };
 
     return (
@@ -68,6 +89,11 @@ const Login = () => {
                 <Button type="submit" variant="contained" color="primary" fullWidth>
                     Login
                 </Button>
+                {errorMessage && (
+                    <Typography variant="h6" color="error" className={classes.customMargin}>
+                        {errorMessage}
+                    </Typography>
+                )}
             </form>
         </Container>
     );

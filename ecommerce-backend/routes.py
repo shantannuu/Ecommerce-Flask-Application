@@ -81,17 +81,17 @@ def register_user():
 def login():
     data = request.json
 
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(username=data['username']).first()
+    user = User.query.filter_by(email=data['email']).first()
     if user:
-        if hashlib.sha256(password.encode()).hexdigest() == user.password_hash:
+        if hashlib.sha256(password.encode()).hexdigest() == user.password:
             # Generate JWT token
             token = generate_jwt_token(user.id)
-            return jsonify({'token': token})
+            return jsonify({'user_id': user.id,'token': token})
         else:
-            return jsonify({'error': 'Invalid username or password'}), 401
+            return jsonify({'message': 'Invalid username or password'}), 401
     else:
         return jsonify({'message': 'Invalid username or password'}), 401
 
