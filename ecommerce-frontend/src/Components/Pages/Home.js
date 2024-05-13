@@ -1,8 +1,11 @@
 import React from 'react'
-
+import NavigationBar from '../Smallcomponents/NavigationBar'
 function Home() {
   return (
-    <div>Home</div>
+    <>
+      <NavigationBar />
+      <div>Home</div>
+    </>
   )
 }
 
