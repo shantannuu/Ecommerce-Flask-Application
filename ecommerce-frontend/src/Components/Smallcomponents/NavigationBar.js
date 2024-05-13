@@ -2,6 +2,7 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Button, makeStyles } from '@material-ui/core';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -35,7 +36,7 @@ const NavigationBar = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [categoryAnchorEl, setCategoryAnchorEl] = React.useState(null);
   const [cartAnchorEl, setCartAnchorEl] = React.useState(null);
-
+  const Navigate = useNavigate();
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -60,13 +61,22 @@ const NavigationBar = () => {
     setCartAnchorEl(null);
   };
 
+  const handleMenuClickForRedirect = (event) =>{
+    console.log(event.currentTarget.getAttribute("aria-label"))
+    if(event.currentTarget.innerText === 'HOME' || event.currentTarget.innerText === 'Home'){
+      Navigate('/')
+    }else if(event.currentTarget.getAttribute("aria-label") === "shopping cart"){
+      Navigate("/Cart")
+    }
+  }
+
   return (
     <AppBar position="static" className={classes.appBar}>
       <Toolbar>
         <Typography variant="h6" className={classes.logo}>
           Logo
         </Typography>
-        <Button color="inherit" className={classes.menuItem}>Home</Button>
+        <Button color="inherit" className={classes.menuItem} onClick={ handleMenuClickForRedirect }>Home</Button>
         <Button
           aria-controls="category-menu"
           aria-haspopup="true"
@@ -93,22 +103,12 @@ const NavigationBar = () => {
           aria-label="shopping cart"
           aria-controls="cart-menu"
           aria-haspopup="true"
-          onClick={handleCartClick}
           className={classes.cartButton}
+          onClick={ handleMenuClickForRedirect }
         >
           <ShoppingCartIcon />
         </IconButton>
-        <Menu
-          id="cart-menu"
-          anchorEl={cartAnchorEl}
-          keepMounted
-          open={Boolean(cartAnchorEl)}
-          onClose={handleCartClose}
-          className={classes.cartMenu}
-        >
-          <MenuItem>Item 1</MenuItem>
-          <MenuItem>Item 2</MenuItem>
-        </Menu>
+        
         <IconButton
           edge="end"
           aria-label="account of current user"
