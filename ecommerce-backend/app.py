@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request , current_app
 # from models import db
 from flask_cors import CORS
 from flask_migrate import Migrate
-from routes import product_routes, user_routes, order_routes
+from routes import category_routes, product_routes, user_routes, order_routes
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ReactJsFlaskApp'
@@ -22,7 +22,7 @@ migrate = Migrate(app, db)
 app.register_blueprint(product_routes)
 app.register_blueprint(user_routes)
 app.register_blueprint(order_routes)
-
+app.register_blueprint(category_routes)
 @app.route('/')
 def index():
     return 'Hello, world!'

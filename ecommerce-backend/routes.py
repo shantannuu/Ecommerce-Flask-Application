@@ -1,19 +1,51 @@
 # product_routes.py
 
 from flask import Blueprint, jsonify, request
-from models import db, Product, User, Order, OrderItem
+from models import db,Category, Product, User, Order, OrderItem
 from authMiddleware import generate_jwt_token, verify_jwt_token
 from sqlalchemy.exc import IntegrityError
 import hashlib
 product_routes = Blueprint('product_routes', __name__)
 user_routes = Blueprint('user_routes', __name__)
 order_routes = Blueprint('order_routes', __name__)
+category_routes = Blueprint('category_routes', __name__)
+
+
+# Category API
+@category_routes.route('/Categories', methods=['POST'])
+def create_category():
+    try:
+        data = request.json
+        name = data.get('name').lower()
+        description = data.get('description').lower()
+        existingCategory = Category.query.filter_by(name=name).first()
+        
+        if existingCategory:
+            return jsonify({'success':False , 'message': 'Category is already added'}), 400
+        
+        new_category = Category(name=name,description=description)
+        db.session.add(new_category)
+        db.session.commit()
+        return jsonify({'success': True , 'message': 'Category Added' ,'category' : new_category.serialize()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
+
+@product_routes.route('/Categories', methods=['GET'])
+def get_categories():
+    categories = Category.query.all()
+    return jsonify({'success': True , 'message': 'Category Fetched' , 'data': [category.serialize() for category in categories]})
+
 
 # Product API
 @product_routes.route('/products', methods=['GET'])
 def get_products():
-    products = Product.query.all()
-    return jsonify([product.serialize() for product in products])
+    try:
+        products = Product.query.all()
+        return jsonify({'success': True , 'message': 'Product Fetched' , 'data': [product.serialize() for product in products]})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
 
 @product_routes.route('/products/<int:id>', methods=['GET'])
 def get_product(id):
@@ -22,11 +54,22 @@ def get_product(id):
 
 @product_routes.route('/products', methods=['POST'])
 def create_product():
-    data = request.json
-    new_product = Product(**data)
-    db.session.add(new_product)
-    db.session.commit()
-    return jsonify(new_product.serialize()), 201
+    try:
+        data = request.json
+        new_product = Product(
+            name=data['name'],
+            description=data['description'],
+            price=data['price'],
+            image_url=data['image'],
+            quantity=data['quantity'],
+            category_id=data['category']
+        )
+        db.session.add(new_product)
+        db.session.commit()
+        return jsonify({'success': True , 'message' : 'Product Added' ,'product' : new_product.serialize()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
 
 @product_routes.route('/products/<int:id>', methods=['PUT'])
 def update_product(id):
@@ -89,16 +132,25 @@ def login():
         if hashlib.sha256(password.encode()).hexdigest() == user.password:
             # Generate JWT token
             token = generate_jwt_token(user.id)
-            return jsonify({'user_id': user.id,'token': token})
+            return jsonify({'token': token})
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
     else:
         return jsonify({'message': 'Invalid username or password'}), 401
 
-@user_routes.route('/user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    user = User.query.get_or_404(user_id)
-    return jsonify(user.serialize())
+@user_routes.route('/user', methods=['GET'])
+def get_user():
+    try:
+        user_id = verify_jwt_token(request.headers.get('Authorization'))
+        if(user_id):
+            user = User.query.get_or_404(user_id)
+            return jsonify({'success': True , 'user' : user.serialize()})
+        else:
+            return jsonify({'success': False , 'message' : 'No user Found'})
+    except RuntimeError:
+        # Handle database integrity error (e.g., duplicate entry)
+        db.session.rollback()
+        return jsonify({'success': False ,'message': 'An error occurred while fetching the user'}), 500
 
 # Order API
 @order_routes.route('/orders', methods=['POST'])

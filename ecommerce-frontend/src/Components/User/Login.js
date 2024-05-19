@@ -44,7 +44,7 @@ const Login = () => {
         try {
 
             const response = await login(formData); // Call the register API function
-            console.log(response.user_id); // Handle success response
+            // console.log(response.user_id); // Handle success response
             
             setFormData({
                 email: '',

@@ -17,3 +17,13 @@ export const login = async (userData) => {
     throw error.response.data;
   }
 };
+
+export const GetLoggedInUserDetails = async () => {
+  try {
+      const response = await AxioInstanceApi.get('/user');
+      return response.data;
+  } catch (error) {
+      throw error;
+  }
+
+}

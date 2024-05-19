@@ -135,7 +135,7 @@ const NavigationBar = () => {
           onClose={handleMenuClose}
           className={classes.cartMenu}
         >
-          <MenuItem onClick={handleMenuClose} className={classes.subMenuItem}>Profile</MenuItem>
+          <MenuItem onClick={handleMenuClose} className={classes.subMenuItem}>'Profile'</MenuItem>
           <MenuItem onClick={handleMenuClose} className={classes.subMenuItem}>My account</MenuItem>
           <MenuItem onClick={handleMenuClose} className={classes.subMenuItem}>Logout</MenuItem>
         </Menu>

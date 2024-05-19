@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, List, ListItem, ListItemText, Button, makeStyles } from '@material-ui/core';
 import NavigationBar from '../Smallcomponents/NavigationBar';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -20,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Cart = () => {
     const classes = useStyles();
+    const { user } = useSelector((state) => state.users);
     const [cart, setCart] = useState([
         { id: 1, name: 'Product 1', price: 10 },
         { id: 2, name: 'Product 2', price: 20 },
@@ -35,10 +37,9 @@ const Cart = () => {
 
     return (
         <>
-        <NavigationBar/>
         <div className={classes.root}>
             <Typography variant="h4" align="center" gutterBottom>
-                Shopping Cart
+                Shopping Cart - { user.username }
             </Typography>
             <List className={classes.list}>
                 {cart.map((item) => (
