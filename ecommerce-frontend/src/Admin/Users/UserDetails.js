@@ -8,6 +8,7 @@ import {
   Button
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
+import { GetUserDetails } from '../../Components/AxioApi/UserApi';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -30,19 +31,21 @@ const UserDetails = () => {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
 
+  const getUserById = async () => {
+    try{
+      const response = await GetUserDetails(userId);
+      if(response.success){
+        setUser(response.user);
+      }else{
+        console(response.message)
+      }
+    }catch(error){
+      console(error.message)
+    }
+  }
+
   useEffect(() => {
-    // Fetch user details from your backend API
-    // For demonstration, I'm initializing user with dummy data
-    const dummyUser = {
-      id: userId,
-      name: `User ${userId}`,
-      email: `user${userId}@example.com`,
-      role: userId % 2 === 0 ? 'Admin' : 'Customer',
-      address: `Address of User ${userId}`,
-      phone: `123-456-789${userId}`,
-      // Add other details as necessary
-    };
-    setUser(dummyUser);
+    getUserById();
   }, [userId]);
 
   if (!user) return <div>Loading...</div>;
@@ -57,7 +60,7 @@ const UserDetails = () => {
           ID: {user.id}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
-          Name: {user.name}
+          Name: {user.username}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
           Email: {user.email}

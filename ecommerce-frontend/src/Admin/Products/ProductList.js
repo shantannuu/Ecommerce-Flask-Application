@@ -33,6 +33,7 @@ const ProductList = () => {
   const classes = useStyles();
   const [products , setProducts ] = useState([]);
   const [categories, setCategories] = useState([]);
+  
   const getCategories = async () => {
     try {
       const response = await GetAllCategories();

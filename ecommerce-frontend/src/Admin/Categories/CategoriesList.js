@@ -41,15 +41,6 @@ const CategoriesList = () => {
   }
 
   useEffect(() => {
-    // Fetch categories data from your backend API
-    // Update setCategories based on the fetched data
-    // For demonstration, I'm initializing categories with dummy data
-    // const dummyCategories = Array.from({ length: 10 }, (_, index) => ({
-    //   id: index + 1,
-    //   name: `Category ${index + 1}`,
-    //   description: `Description of Category ${index + 1}`,
-    // }));
-    // setCategories(dummyCategories);
     getCategories();
 
   }, []);

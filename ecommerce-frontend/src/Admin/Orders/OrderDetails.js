@@ -8,6 +8,9 @@ import {
   Button,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
+import { GetAllOrdersById,GetAllOrders, GetOrderById } from '../../Components/AxioApi/OrderApi';
+import { GetAllUsers } from '../../Components/AxioApi/UserApi';
+import { GetAllProducts } from '../../Components/AxioApi/ProductApi';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -29,23 +32,69 @@ const OrderDetails = () => {
   const classes = useStyles();
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
+  // const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [products , setProducts ] = useState([]);
+  
+  const getUsers = async () => {
+    try {
+      const response = await GetAllUsers();
+      if (response.success) {
+        setUsers(response.data)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+  }
+
+  const getOrderById = async () => {
+    try {
+      console.log(orderId)
+      const response = await GetOrderById(orderId);
+      if (response.success) {
+        setOrder(response.order)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  
+
+  const getProducts = async () => {
+    try {
+      const response = await GetAllProducts();
+      if (response.success) {
+        setProducts(response.data)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+  }
 
   useEffect(() => {
-    // Fetch order details from your backend API
-    // For demonstration, I'm initializing order with dummy data
-    const dummyOrder = {
-      id: orderId,
-      customer: `Customer ${orderId}`,
-      total: orderId * 100,
-      status: orderId % 2 === 0 ? 'Completed' : 'Pending',
-      date: `2023-05-${10 + parseInt(orderId, 10)}`,
-      items: [
-        { name: 'Item 1', quantity: 1, price: 50 },
-        { name: 'Item 2', quantity: 2, price: 75 },
-      ],
-    };
-    setOrder(dummyOrder);
+    getOrderById();
+    getProducts();
+    getUsers();
   }, [orderId]);
+
+  const getUserNameById = (id) => {
+    const user = users.find((user) => user.id === id);
+    return user ? user.username : 'Unknown Category';
+  };
+
+  const getProductsById = (id) => {
+    const product = products.find((product) => product.id === id);
+    return product ? product.name : 'Unknown Category';
+  };
 
   if (!order) return <div>Loading...</div>;
 
@@ -59,23 +108,23 @@ const OrderDetails = () => {
           ID: {order.id}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
-          Customer: {order.customer}
+          Customer: {getUserNameById(order.user_id)}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
-          Total: ${order.total}
+          Total: ${order.total_price}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
           Status: {order.status}
         </Typography>
         <Typography variant="h6" className={classes.detailItem}>
-          Date: {order.date}
+          Date: {order.created_at}
         </Typography>
         <Typography variant="h6" gutterBottom>
           Items:
         </Typography>
-        {order.items.map((item, index) => (
+        {order.order_items.map((item, index) => (
           <Typography variant="body1" className={classes.detailItem} key={index}>
-            {item.name} - Quantity: {item.quantity} - Price: ${item.price}
+            {getProductsById(item.product_id)} - Quantity: {item.quantity} - Price: ${item.unit_price}
           </Typography>
         ))}
         <Button

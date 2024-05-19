@@ -44,6 +44,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50),server_default  = 'user')
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.now())
 
     def serialize(self):
@@ -52,6 +53,7 @@ class User(db.Model):
             'username': self.username,
             'email': self.email,
             'password': self.password,
+            'role':self.role,
             'created_at': self.created_at
         }
 

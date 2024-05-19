@@ -13,6 +13,8 @@ import {
   Button,
   makeStyles,
 } from '@material-ui/core';
+import { GetAllOrders } from '../../Components/AxioApi/OrderApi';
+import { GetAllUsers } from '../../Components/AxioApi/UserApi';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -32,19 +34,44 @@ const useStyles = makeStyles((theme) => ({
 const OrderList = () => {
   const classes = useStyles();
   const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
+  const getUsers = async () => {
+    try {
+      const response = await GetAllUsers();
+      if (response.success) {
+        setUsers(response.data)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+  }
+
+  const getOrders = async () => {
+    try {
+      const response = await GetAllOrders();
+      if (response.success) {
+        setOrders(response.data)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+  }
 
   useEffect(() => {
-    // Fetch order data from your backend API
-    // For demonstration, I'm initializing orders with dummy data
-    const dummyOrders = Array.from({ length: 10 }, (_, index) => ({
-      id: index + 1,
-      customer: `Customer ${index + 1}`,
-      total: (index + 1) * 100,
-      status: index % 2 === 0 ? 'Completed' : 'Pending',
-      date: `2023-05-${index + 10}`,
-    }));
-    setOrders(dummyOrders);
+    getOrders();
+    getUsers();
   }, []);
+
+  const getUserNameById = (id) => {
+    const user = users.find((user) => user.id === id);
+    return user ? user.username : 'Unknown Category';
+  };
 
   return (
     <Container className={classes.container}>
@@ -68,10 +95,10 @@ const OrderList = () => {
               {orders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>${order.total}</TableCell>
+                  <TableCell>{ getUserNameById(order.user_id)}</TableCell>
+                  <TableCell>${order.total_price}</TableCell>
                   <TableCell>{order.status}</TableCell>
-                  <TableCell>{order.date}</TableCell>
+                  <TableCell>{order.created_at}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"

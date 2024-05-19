@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { SetUser } from '../redux/userSlice';
 import { GetLoggedInUserDetails } from '../AxioApi/UserApi';
 import NavigationBar from './NavigationBar';
-
+import { jwtDecode } from 'jwt-decode';
 function ProtectedRoutes({ children }) {
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.users);
@@ -32,17 +32,24 @@ function ProtectedRoutes({ children }) {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+        
         if (!token) {
             navigate('/Login');
         } else {
-            validateUserToken();
+            const decoded = jwtDecode(token);
+            if (decoded.role === 'user') {
+                validateUserToken();
+            }else{
+                navigate('/')
+            }
         }
+        
+        
     }, []);
 
 
     return (
         <div>{user && <>
-            <NavigationBar/>
             {children}
         </>
 

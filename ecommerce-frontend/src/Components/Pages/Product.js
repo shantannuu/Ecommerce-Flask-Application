@@ -63,7 +63,6 @@ const Product = () => {
 
     return (
         <>
-        <NavigationBar />
         <div className={classes.root}>
             <Grid container spacing={3} className={classes.productImageContainer}>
                 {/* Product Image */}

@@ -131,7 +131,7 @@ def login():
     if user:
         if hashlib.sha256(password.encode()).hexdigest() == user.password:
             # Generate JWT token
-            token = generate_jwt_token(user.id)
+            token = generate_jwt_token(user.id,user.role)
             return jsonify({'token': token})
         else:
             return jsonify({'message': 'Invalid username or password'}), 401
@@ -142,8 +142,9 @@ def login():
 def get_user():
     try:
         user_id = verify_jwt_token(request.headers.get('Authorization'))
+        print(user_id)
         if(user_id):
-            user = User.query.get_or_404(user_id)
+            user = User.query.get_or_404(user_id['user'])
             return jsonify({'success': True , 'user' : user.serialize()})
         else:
             return jsonify({'success': False , 'message' : 'No user Found'})
@@ -151,8 +152,38 @@ def get_user():
         # Handle database integrity error (e.g., duplicate entry)
         db.session.rollback()
         return jsonify({'success': False ,'message': 'An error occurred while fetching the user'}), 500
+    
+@user_routes.route('/users', methods=['GET'])
+def get_users():
+    try:
+        users = User.query.all()
+        return jsonify({'success': True , 'message': 'User Fetched' , 'data': [user.serialize() for user in users]})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
+
+@user_routes.route('/user/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        if user:
+            return jsonify({'success': True , 'message': 'User Fetched' , 'user' : user.serialize()})
+        else:
+            return jsonify({'success': False , 'message': 'User not found'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
 
 # Order API
+@order_routes.route('/orders', methods=['GET'])
+def get_orders():
+    try:
+        orders = Order.query.all()
+        return jsonify({'success': True , 'message': 'Orders Fetched' , 'data': [order.serialize() for order in orders]})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500
+
 @order_routes.route('/orders', methods=['POST'])
 def create_order():
     data = request.json
@@ -165,7 +196,7 @@ def create_order():
         # Extract 'order_items' from the data
         order_items_data = data.pop('order_items', [])
 
-        new_order = Order(user_id=user_id, **data)
+        new_order = Order(user_id=user_id['user'], **data)
 
         # Create OrderItem instances for each order item and associate them with the new order
         for item_data in order_items_data:
@@ -180,7 +211,15 @@ def create_order():
     else:
         return jsonify({'message': 'Unauthorized'}), 401
 
-@order_routes.route('/orders/<int:user_id>', methods=['GET'])
-def get_orders(user_id):
-    orders = Order.query.filter_by(user_id=user_id).all()
-    return jsonify([order.serialize() for order in orders])
+@order_routes.route('/orders/<int:order_id>', methods=['GET'])
+def get_order_by_id(order_id):
+    try:
+        order = Order.query.get_or_404(order_id)
+        if order:
+
+            return jsonify({'success': True , 'message': 'order Fetched' , 'order' : order.serialize() })
+        else:
+            return jsonify({'success': False , 'message': 'order not found'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False ,'message': str(e)}), 500

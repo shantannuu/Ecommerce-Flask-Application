@@ -11,6 +11,7 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import { Link as RouterLink } from 'react-router-dom';
+import { GetAllUsers } from '../../Components/AxioApi/UserApi';
 
 const useStyles = makeStyles((theme) => ({
   table: {
@@ -25,16 +26,23 @@ const UserList = () => {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
 
+  const getUsers = async () => {
+    try {
+      const response = await GetAllUsers();
+      if (response.success) {
+        setUsers(response.data)
+      } else {
+        console.log(response.message)
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+  }
+
   useEffect(() => {
-    // Fetch user data from your backend API
-    // For demonstration, I'm initializing users with dummy data
-    const dummyUsers = Array.from({ length: 10 }, (_, index) => ({
-      id: index + 1,
-      name: `User ${index + 1}`,
-      email: `user${index + 1}@example.com`,
-      role: index % 2 === 0 ? 'Admin' : 'Customer',
-    }));
-    setUsers(dummyUsers);
+    getUsers();
+    
   }, []);
 
   return (
@@ -53,7 +61,7 @@ const UserList = () => {
           {users.map((user) => (
             <TableRow key={user.id}>
               <TableCell>{user.id}</TableCell>
-              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.username}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.role}</TableCell>
               <TableCell>

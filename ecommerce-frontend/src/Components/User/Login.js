@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, TextField, Typography, Container, makeStyles } from '@material-ui/core';
-import { login } from '../AxioApi/UserApi';
+import {  login } from '../AxioApi/UserApi';
+import {jwtDecode} from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -26,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Login = () => {
     const classes = useStyles();
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     const [errorMessage, setErrorMessage] = useState('');
     const [formData, setFormData] = useState({
         email: '',
@@ -50,15 +51,38 @@ const Login = () => {
                 email: '',
                 password: '',
             });
-            
+            const decoded = jwtDecode(response.token);
             localStorage.setItem("token", response.token);
-            navigate('/');
+
+            
+
+            if (decoded.role === 'admin') {
+                window.location.href = '/admin/Product';
+              } else {
+                window.location.href = '/';
+              }
+
+            
         } catch (error) {
             console.error(error.message); // Handle error response
             setErrorMessage(error.message);
         }
         // console.log(formData);
     };
+
+    useEffect(()=>{
+        const token = localStorage.getItem("token");
+        
+        if(token){
+            const decoded = jwtDecode(token);
+            if(decoded.role === 'admin'){
+                navigate('/admin/Product')
+            }else{
+                navigate("/")
+            }
+            
+        }
+    },[])
 
     return (
         <Container className={classes.container}>

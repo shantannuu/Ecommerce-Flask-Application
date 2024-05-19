@@ -4,7 +4,6 @@ import ProductCards from '../Smallcomponents/ProductCards'
 function Home() {
   return (
     <>
-      <NavigationBar/>
       <ProductCards/>
     </>
   )
