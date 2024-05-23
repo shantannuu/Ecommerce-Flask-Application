@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Grid, Button, makeStyles } from '@material-ui/core';
-import { GetAllCategories } from '../../Components/AxioApi/CategoryApi';
+import { DeleteCategoryData, GetAllCategories } from '../../Components/AxioApi/CategoryApi';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,12 +21,15 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'space-between',
     marginTop: theme.spacing(2),
   },
+  customMargin: {
+    margin: theme.spacing(1), // Equivalent to 16px
+},
 }));
 
 const CategoriesList = () => {
   const classes = useStyles();
   const [categories, setCategories] = useState([]);
-
+  const navigate = useNavigate();
   const getCategories = async () => {
     try {
       const response = await GetAllCategories();
@@ -40,19 +44,55 @@ const CategoriesList = () => {
 
   }
 
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+
+  const showMessage = (message, status) => {
+
+      if (status) {
+          setSuccessMessage(message);
+
+          // Clear the success message after 3 seconds
+          setTimeout(() => {
+              setSuccessMessage('');
+          }, 4000); // 3000 milliseconds = 3 seconds
+
+      } else {
+          setErrorMessage(message)
+
+          // Clear the success message after 3 seconds
+          setTimeout(() => {
+              setErrorMessage('');
+          }, 4000); // 3000 milliseconds = 3 seconds
+      }
+  }
+
+
   useEffect(() => {
     getCategories();
 
   }, []);
 
-  const handleEdit = (id) => {
+  const handleEdit = (category) => {
     // Implement edit functionality
-    console.log('Edit category with ID:', id);
+    navigate('/admin/AddCategory', { state: { category } })
   };
 
-  const handleDelete = (id) => {
-    // Implement delete functionality
-    console.log('Delete category with ID:', id);
+  const handleDelete = async (id) => {
+    try {
+      const response = await DeleteCategoryData(id);
+      if (response.success) {
+        console.log(response.message)
+        getCategories();
+        showMessage(response.message, response.success);
+      } else {
+        showMessage(response.message, response.success);
+      }
+    } catch (error) {
+      console.log(error.message);
+      showMessage(error.message, error.success);
+    }
   };
 
   return (
@@ -75,7 +115,7 @@ const CategoriesList = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleEdit(category.id)}
+                    onClick={() => handleEdit(category)}
                   >
                     Edit
                   </Button>
@@ -92,6 +132,16 @@ const CategoriesList = () => {
           </Grid>
         ))}
       </Grid>
+      {successMessage && (
+        <Typography variant="h6" color="primary" className={classes.customMargin}>
+          {successMessage}
+        </Typography>
+      )}
+      {errorMessage && (
+        <Typography variant="h6" color="error" className={classes.customMargin}>
+          {errorMessage}
+        </Typography>
+      )}
     </div>
   );
 };

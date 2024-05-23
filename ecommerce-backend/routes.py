@@ -31,11 +31,44 @@ def create_category():
         db.session.rollback()
         return jsonify({'success': False ,'message': str(e)}), 500
 
-@product_routes.route('/Categories', methods=['GET'])
+@category_routes.route('/Categories', methods=['GET'])
 def get_categories():
     categories = Category.query.all()
     return jsonify({'success': True , 'message': 'Category Fetched' , 'data': [category.serialize() for category in categories]})
 
+@category_routes.route('/Categories/<int:id>', methods=['PUT'])
+def update_category(id):
+    try:
+        category = Category.query.get_or_404(id)
+        data = request.json
+
+        if not data:
+            return jsonify({'success':False,'message':'No Input data Provided'}), 400
+        
+        for key, value in data.items():
+            setattr(category, key, value)
+
+        updated_category = Category.query.get(id)
+
+        db.session.commit()
+        return jsonify({'success':True,'message': 'Category updated successfully', 'category' : updated_category.serialize()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@category_routes.route('/Categories/<int:id>', methods=['DELETE'])
+def delete_category(id):
+    try:
+        category = Category.query.get_or_404(id)
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify({'success':True,'message': 'Product deleted'})
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'success':False,'message': 'Category cannot be deleted because it is referenced by a product'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success':False,'message': str(e)}), 500
 
 # Product API
 @product_routes.route('/products', methods=['GET'])
@@ -73,19 +106,40 @@ def create_product():
 
 @product_routes.route('/products/<int:id>', methods=['PUT'])
 def update_product(id):
-    product = Product.query.get_or_404(id)
-    data = request.json
-    for key, value in data.items():
-        setattr(product, key, value)
-    db.session.commit()
-    return jsonify(product.serialize())
+    try:
+        product = Product.query.get_or_404(id)
+        data = request.json
+
+        if not data:
+            return jsonify({'success':False,'message':'No Input data Provided'}), 400
+        
+        product.name = data['name']
+        product.category_id = data['category']
+        product.description = data['description']
+        product.quantity = data['quantity']
+        product.price = data['price']
+
+        db.session.commit()
+        return jsonify({'success':True,'message': 'Product updated successfully', 'product' : product.serialize()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 
 @product_routes.route('/products/<int:id>', methods=['DELETE'])
 def delete_product(id):
-    product = Product.query.get_or_404(id)
-    db.session.delete(product)
-    db.session.commit()
-    return jsonify({'message': 'Product deleted'})
+    try:
+        product = Product.query.get_or_404(id)
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({'success':True,'message': 'Product deleted'})
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'success':False,'message': 'Product cannot be deleted because it is referenced by a order'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success':False,'message': str(e)}), 500
 
 
 # user API

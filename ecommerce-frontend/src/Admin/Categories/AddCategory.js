@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextField, Button, Container, Typography, makeStyles } from '@material-ui/core';
-import { AddCategoryData } from '../../Components/AxioApi/CategoryApi';
+import { AddCategoryData, EditCategoryData } from '../../Components/AxioApi/CategoryApi';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -21,13 +22,15 @@ const useStyles = makeStyles((theme) => ({
 
 
 const AddCategory = () => {
+    const location = useLocation();
     const classes = useStyles();
+    const navigate = useNavigate();
     const [category, setCategory] = useState({
         name: '',
         description: '',
     });
 
-    
+
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -61,14 +64,27 @@ const AddCategory = () => {
         event.preventDefault();
 
         try {
-            const response = await AddCategoryData(category); 
-            console.log(response.category); 
-            showMessage(response.message, response.success); 
-            setCategory({
-                name: '',
-                description: '',
-                
-            });
+            if (location.state && location.state.category) {
+                const response = await EditCategoryData(location.state.category.id, category);
+                console.log(response.category);
+                showMessage(response.message, response.success);
+                setCategory({
+                    name: '',
+                    description: '',
+
+                });
+                navigate('/admin/Categories');
+            } else {
+                const response = await AddCategoryData(category);
+                console.log(response.category);
+                showMessage(response.message, response.success);
+                setCategory({
+                    name: '',
+                    description: '',
+
+                });
+            }
+
         } catch (error) {
             console.error(error);
             showMessage(error.message, error.success);
@@ -77,11 +93,24 @@ const AddCategory = () => {
         console.log(category);
     };
 
+    useEffect(() => {
+        if (location.state && location.state.category) {
+            setCategory(location.state.category)
+        } else {
+            setCategory({
+                name: '',
+                description: '',
+
+            });
+        }
+
+    }, [location.state])
+
     return (
         <Container component="main" maxWidth="xs">
             <div className={classes.root}>
                 <Typography component="h1" variant="h5">
-                    Add Category
+                    {location.state && location.state.category ? 'Edit Category' : 'Add Category'}
                 </Typography>
                 <form className={classes.form} onSubmit={handleSubmit}>
                     <TextField
@@ -116,7 +145,7 @@ const AddCategory = () => {
                         color="primary"
                         className={classes.submit}
                     >
-                        Add Category
+                        {location.state && location.state.category ? 'Edit Category' : 'Add Category'}
                     </Button>
                     {successMessage && (
                         <Typography variant="h6" color="primary" className={classes.customMargin}>
